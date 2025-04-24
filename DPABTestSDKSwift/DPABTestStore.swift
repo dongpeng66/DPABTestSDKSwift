@@ -92,7 +92,7 @@ class DPABTestStore: NSObject {
         paramObj.reserve1 = param
         mmkv?.set(paramObj, forKey: lowerKey)
     }
-    
+    // 批量插入DPABTestParam
     func insertABTestParams(_ params: [DPABTestParam]) {
         lock.lock()
         defer { lock.unlock() }
@@ -121,7 +121,7 @@ class DPABTestStore: NSObject {
         lock.lock()
         defer { lock.unlock() }
         
-        let objects = mmkv?.allKeys() ?? [[String: Any]]()
+        let objects = mmkv?.allKeys() ?? [String]()
         var results = [[String: Any]]()
         
         for key in objects {
