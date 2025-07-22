@@ -13,17 +13,8 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-//        NSArray *dataArray = [[DPABTest sharedInstance].abStore queryAllKeyValues];
-//        for (NSDictionary *dic in dataArray) {
-//            NSLog(@"--key ---%@   -- value-----%@",dic[@"key"],dic[@"value"]);
-//            
-//        }
-//
-//        NSLog(@"[DPABTestDefaultFlag getFda]---%ld",[DPABTestDefaultFlag getFda]);
-//        if ([DPABTestDefaultFlag getFda] == DPABTestValue_B) {
-//            NSLog(@"DPABTestValue_B");
-//        }
-        
+    }
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         let dataArray = DPABTest.shared.abStore.queryAllKeyValues()
         
         for d in dataArray {
@@ -36,7 +27,6 @@ class ViewController: UIViewController {
         if fdaAb == .b {
             print("DPABTestValue_B")
         }
-        
         
     }
 

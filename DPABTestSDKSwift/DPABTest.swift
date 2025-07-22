@@ -10,7 +10,7 @@ import AFNetworking
 
 class DPABTest: NSObject {
     
-    static let DPABTEST_CONFIG_URL = "https://github.com/dongpeng66/public/blob/main/abtest.json"
+    static let DPABTEST_CONFIG_URL = "https://raw.githubusercontent.com/dongpeng66/public/main/abtest.json"
 
     static let kABTestFetchConfigSuccessNotification = Notification.Name("kABTestFetchConfigSuccessNotification")
     static let kABTestFetchConfigFailedNotification = Notification.Name("kABTestFetchConfigFailedNotification")
@@ -82,33 +82,84 @@ class DPABTest: NSObject {
     }
     
     func fetchABConfig(success: ((DPABTest) -> Void)?, failure: (() -> Void)?) {
+//        let configUrl = DPABTest.DPABTEST_CONFIG_URL
+//        let parameters: [String: Any] = [:]  // 可根据需要添加参数
+//        
+//        let manager = AFHTTPSessionManager(baseURL: URL(string: configUrl))
+//        manager.requestSerializer = AFHTTPRequestSerializer()
+//        let responseSerializer = AFJSONResponseSerializer()
+//        responseSerializer.acceptableContentTypes = ["application/json", "text/json", "text/javascript", "text/html", "text/plain"]
+//        manager.responseSerializer = responseSerializer
+//        
+//        manager.get(configUrl, parameters: parameters, headers: nil) { downloadProgress  in
+//            
+//        } success: { [weak self] task, responseObject in
+//            guard let self = self else { return }
+//            
+//            if let json = responseObject as? [String: Any],
+//               let respCode = json["respCode"] as? String, respCode == "0",
+//               let respData = json["respData"] as? [String: Any] {
+//                handleSuccessResponse(json, success: success, failure: failure)
+//            } else {
+//                handleBusinessFailure(failure: failure)
+//            }
+//        } failure: { [weak self]  task, error in
+//            guard let self = self else { return }
+//            handleFailure(error: error as NSError, failure: failure)
+//        }
+        
+        loadNetWork(success: success, failure: failure)
+    }
+    
+    func loadNetWork(success: ((DPABTest) -> Void)?, failure: (() -> Void)?) {
         let configUrl = DPABTest.DPABTEST_CONFIG_URL
-        let parameters: [String: Any] = [:]  // 可根据需要添加参数
+        guard let apiURL = URL(string: configUrl) else {
+            return
+        }
         
-        let manager = AFHTTPSessionManager(baseURL: nil)
-        manager.requestSerializer = AFHTTPRequestSerializer()
-        let responseSerializer = AFJSONResponseSerializer()
-        responseSerializer.acceptableContentTypes = ["application/json", "text/json", "text/javascript", "text/html", "text/plain"]
-        manager.responseSerializer = responseSerializer
-        
-        manager.get(configUrl, parameters: parameters, headers: nil) { downloadProgress  in
-            
-        } success: { [weak self] task, responseObject in
+        fetchJSONFromURL(apiURL) { [weak self]  (responseObject, error) in
             guard let self = self else { return }
-            
+            print("22222")
             if let json = responseObject as? [String: Any],
                let respCode = json["respCode"] as? String, respCode == "0",
                let respData = json["respData"] as? [String: Any] {
                 handleSuccessResponse(json, success: success, failure: failure)
             } else {
-                handleBusinessFailure(failure: failure)
+                if let err = error {
+                    handleFailure(error: err as NSError, failure: failure)
+                } else {
+                    handleBusinessFailure(failure: failure)
+                }
+                
             }
-        } failure: { [weak self]  task, error in
-            guard let self = self else { return }
-            handleFailure(error: error as NSError, failure: failure)
         }
-        getLocalJson()
     }
+    func fetchJSONFromURL(_ url: URL, completion: @escaping (Any?, Error?) -> Void) {
+        let session = URLSession.shared
+        let task = session.dataTask(with: url) { data, response, error in
+            // 错误处理
+            if let error = error ?? (data == nil ? NSError(domain: "Data Error", code: -1, userInfo: nil) : nil) {
+                completion(nil, error)
+                return
+            }
+            
+            // 状态码验证
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                completion(nil, NSError(domain: "HTTP Error", code: httpResponse.statusCode, userInfo: nil))
+                return
+            }
+            
+            // JSON解析
+            do {
+                let jsonObj = try JSONSerialization.jsonObject(with: data!, options: .mutableContainers)
+                completion(jsonObj, nil)
+            } catch let jsonError {
+                completion(nil, jsonError)
+            }
+        }
+        task.resume()
+    }
+
     
     // MARK: - 响应处理
     private func handleSuccessResponse(_ response: Any,
@@ -178,9 +229,6 @@ class DPABTest: NSObject {
         NotificationCenter.default.post(name: NSNotification.Name(DPABTest.kABTestFetchConfigFailedNotification.rawValue), object: ["reason": "error"])
         failure?()
         self.netWorkFailure?()
-        
-        // 获取本地缓存
-        getLocalJson()
     }
     
     private func handleBusinessFailure(failure: (() -> Void)?) {

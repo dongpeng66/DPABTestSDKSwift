@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         MMKV.initialize(rootDir: nil)
         
-        DPABTest().fetchABConfig()
+        DPABTest.shared.fetchABConfig()
         return true
     }
 
