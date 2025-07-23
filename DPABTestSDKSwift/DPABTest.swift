@@ -12,9 +12,6 @@ class DPABTest: NSObject {
     
     static let DPABTEST_CONFIG_URL = "https://raw.githubusercontent.com/dongpeng66/public/main/abtest.json"
 
-    static let kABTestFetchConfigSuccessNotification = Notification.Name("kABTestFetchConfigSuccessNotification")
-    static let kABTestFetchConfigFailedNotification = Notification.Name("kABTestFetchConfigFailedNotification")
-
 
     lazy var abStore: DPABTestStore = {
         let v = DPABTestStore()
@@ -217,7 +214,7 @@ class DPABTest: NSObject {
         self.testData = updatedTestData
         
         // 发送通知
-        NotificationCenter.default.post(name: NSNotification.Name(DPABTest.kABTestFetchConfigSuccessNotification.rawValue), object: nil)
+        NotificationCenter.default.post(name: .kABTestFetchConfigSuccessNotification, object: nil)
         
         // 回调
         success?(self)
@@ -226,13 +223,13 @@ class DPABTest: NSObject {
     }
     
     private func handleFailure(error: NSError, failure: (() -> Void)?) {
-        NotificationCenter.default.post(name: NSNotification.Name(DPABTest.kABTestFetchConfigFailedNotification.rawValue), object: ["reason": "error"])
+        NotificationCenter.default.post(name: .kABTestFetchConfigFailedNotification, object: ["reason": "error"])
         failure?()
         self.netWorkFailure?()
     }
     
     private func handleBusinessFailure(failure: (() -> Void)?) {
-        NotificationCenter.default.post(name: NSNotification.Name(DPABTest.kABTestFetchConfigFailedNotification.rawValue), object:  ["reason": "buz"])
+        NotificationCenter.default.post(name: .kABTestFetchConfigFailedNotification, object:  ["reason": "buz"])
         failure?()
         self.netWorkFailure?()
     }
@@ -274,4 +271,9 @@ class DPABTest: NSObject {
         abStore.clearStore()
     }
     
+}
+// MARK: - Notification
+extension NSNotification.Name {
+    static let kABTestFetchConfigSuccessNotification = Notification.Name("kABTestFetchConfigSuccessNotification")
+    static let kABTestFetchConfigFailedNotification = Notification.Name("kABTestFetchConfigFailedNotification")
 }
