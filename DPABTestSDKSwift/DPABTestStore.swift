@@ -16,7 +16,7 @@ class DPABTestStore: NSObject {
     
     private let lock = NSLock()
     
-    static let shared = DPABTestStore()
+//    static let shared = DPABTestStore()
     static let storeIDKey = "__DPABTestStoreIDKEY__"
     static let NotFoundValue = "__NotFound__"
     static let QA_ABTEST_SWITCH_KEY = "QA_ABTEST_SWITCH_KEY"
@@ -28,7 +28,7 @@ class DPABTestStore: NSObject {
         
     }
     
-    // MARK: - 公共方法
+    // MARK: - 公共方法--只更新内存值
     func updateValueIfExists(_ key: String, value: String) {
         lock.lock()
         defer { lock.unlock() }

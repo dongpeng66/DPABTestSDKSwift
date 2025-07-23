@@ -35,7 +35,7 @@ class DPABTest: NSObject {
         
         
         if let switchValue = abStore.string(forKey: DPABTestStore.QA_ABTEST_SWITCH_KEY), switchValue == "1" {
-            // 打开小工具QA_ABTEST开关则不拉接口
+            // 打开小工具QA_ABTEST开关则不拉接口，用于调试写死本地的AB值
             netWorkFailure?()
             return
         }
@@ -179,9 +179,11 @@ class DPABTest: NSObject {
             guard let key = (configDict["abtk"] as? String)?.lowercased(),
                   let value = configDict["abtv"] as? String,
                   !key.isEmpty, !value.isEmpty else {
+                // 判断key和value一个不存在，则跳过
                 continue
             }
             
+            // 额外值，额外字段，可扩展，可以不用
             let params = configDict["para"] as? String
             let param = DPABTestParam()
             param.key = key
@@ -191,7 +193,7 @@ class DPABTest: NSObject {
             storeArray.append(param)
             updatedTestData[key] = value
             
-            // 更新存储
+            // 更新存储，更新内存中的字典值，用于快速使用，提高首次启动就获取到准备的AB值的命中率
             self.abStore.updateValueIfExists(key, value: value)
         }
         
@@ -257,7 +259,7 @@ class DPABTest: NSObject {
         }
     }
     
-    // MARK: - 调试方法
+    // MARK: - 调试方法-debug小工具使用，用于手动更改某个AB值
     func debug_updateTestData(key: String, value: String) {
         guard !key.isEmpty, !value.isEmpty else { return }
         
@@ -267,6 +269,7 @@ class DPABTest: NSObject {
         abStore.setValue(key, forKey: value)
     }
     
+    // MARK: - 调试方法-debug小工具使用，用于手动清楚AB值数据
     func debug_clearData() {
         abStore.clearStore()
     }
